@@ -94,6 +94,20 @@ public class DO_Test_PushbotAutoDriveByEncoder_Linear extends LinearOpMode {
         rightDriveBack.setDirection(DcMotor.Direction.REVERSE);
     }
 
+    private void allDrivesSetPower(double power) {
+        leftDrive.setPower(power);
+        rightDrive.setPower(power);
+        leftDriveBack.setPower(power);
+        rightDriveBack.setPower(power);
+    }
+    private void allDrivesSetMode(DcMotor.RunMode mode){
+
+        leftDrive.setMode(mode);
+        rightDrive.setMode(mode);
+        rightDriveBack.setMode(mode);
+        rightDriveBack.setMode(mode);
+
+    }
     @Override
     public void runOpMode() {
 
@@ -108,15 +122,9 @@ public class DO_Test_PushbotAutoDriveByEncoder_Linear extends LinearOpMode {
         telemetry.addData("Status", "Resetting Encoders");    //
         telemetry.update();
 
-        leftDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        rightDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        rightDriveBack.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        rightDriveBack.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        allDrivesSetMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        allDrivesSetMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
-        leftDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        rightDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        leftDriveBack.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        rightDriveBack.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
         // Send telemetry message to indicate successful Encoder reset
         telemetry.addData("Path0",  "Starting at %d :%d :%d :%d",
@@ -160,8 +168,8 @@ public class DO_Test_PushbotAutoDriveByEncoder_Linear extends LinearOpMode {
         if (opModeIsActive()) {
 
             // Determine new target position, and pass to motor controller
-            newRightTarget = rightDrive.getCurrentPosition() + (int)(rightInches * COUNTS_PER_INCH);
             newLeftTarget = leftDrive.getCurrentPosition() + (int)(leftInches * COUNTS_PER_INCH);
+            newRightTarget = rightDrive.getCurrentPosition() + (int)(rightInches * COUNTS_PER_INCH);
             newLeftBackTarget = leftDriveBack.getCurrentPosition() + (int)(leftBackInches * COUNTS_PER_INCH);
             newRightBackTarget = rightDriveBack.getCurrentPosition() + (int)(rightBackInches * COUNTS_PER_INCH);
 
@@ -171,17 +179,11 @@ public class DO_Test_PushbotAutoDriveByEncoder_Linear extends LinearOpMode {
             rightDriveBack.setTargetPosition(newRightBackTarget);
 
             // Turn On RUN_TO_POSITION
-            leftDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            rightDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            leftDriveBack.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            rightDriveBack.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            allDrivesSetMode(DcMotor.RunMode.RUN_TO_POSITION);
 
             // reset the timeout time and start motion.
             runtime.reset();
-            leftDrive.setPower(Math.abs(speed));
-            rightDrive.setPower(Math.abs(speed));
-            leftDriveBack.setPower(Math.abs(speed));
-            rightDriveBack.setPower(Math.abs(speed));
+            allDrivesSetPower(Math.abs(speed));
 
             // keep looping while we are still active, and there is time left, and both motors are running.
             // Note: We use (isBusy() && isBusy()) in the loop test, which means that when EITHER motor hits
@@ -204,17 +206,10 @@ public class DO_Test_PushbotAutoDriveByEncoder_Linear extends LinearOpMode {
             }
 
             // Stop all motion;
-            leftDrive.setPower(0);
-            rightDrive.setPower(0);
-            leftDriveBack.setPower(0);
-            rightDriveBack.setPower(0);
+            allDrivesSetPower(0);
 
             // Turn off RUN_TO_POSITION
-            leftDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-            rightDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-            leftDriveBack.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-            rightDriveBack.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-
+            allDrivesSetMode(DcMotor.RunMode.RUN_USING_ENCODER);
             //  sleep(250);   // optional pause after each move
         }
     }
