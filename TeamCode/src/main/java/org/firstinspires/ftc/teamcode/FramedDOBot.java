@@ -56,7 +56,6 @@ public class FramedDOBot
     /* Public OpMode members. */
     public DcMotor leftDrive, rightDrive, leftDriveBack, rightDriveBack = null;
     //public Servo testServo = null;
-    public ColorSensor sensorColor = null;
     public DistanceSensor sensorDistance = null;
 //    public Gyroscope gyro = null;
 //    public DigitalChannel digitalTouch = null;
@@ -72,7 +71,7 @@ public class FramedDOBot
     public static final double ARM_DOWN_POWER  = -0.45 ;
 
     /* local OpMode members. */
-    HardwareMap hwMap           =  null;
+    private HardwareMap hwMap           =  null;
     private ElapsedTime period  = new ElapsedTime();
 
     /* Constructor */
@@ -92,19 +91,18 @@ public class FramedDOBot
 //        gyro = hwMap.get(Gyroscope.class, "imu");
 //        testMotor = hwMap.get(DcMotor.class, "testMotor39530");
 
-        leftDrive = hwMap.get(DcMotor.class, "leftdrive");
-        rightDrive = hwMap.get(DcMotor.class, "rightdrive");
-        leftDriveBack = hwMap.get(DcMotor.class, "leftdriveBack");
-        rightDrive = hwMap.get(DcMotor.class, "rightdriveBack");
-        leftDrive.setDirection(DcMotor.Direction.FORWARD); // Set to REVERSE if using AndyMark motors
-        rightDrive.setDirection(DcMotor.Direction.REVERSE);// Set to FORWARD if using AndyMark motors
+        leftDrive = hwMap.get(DcMotor.class,    "leftdrive");
+        leftDriveBack = hwMap.get(DcMotor.class,"leftdriveBack");
+        rightDrive = hwMap.get(DcMotor.class,   "rightdrive");
+        rightDriveBack = hwMap.get(DcMotor.class,"rightdriveBack");
+        leftDrive.setDirection(DcMotor.Direction.FORWARD);      // Set to REVERSE if using AndyMark motors
+        leftDriveBack.setDirection(DcMotor.Direction.FORWARD);  // Set to REVERSE if using AndyMark motors
+        rightDrive.setDirection(DcMotor.Direction.REVERSE);     // Set to FORWARD if using AndyMark motors
+        rightDriveBack.setDirection(DcMotor.Direction.REVERSE); // Set to FORWARD if using AndyMark motors
 
         //        testServo = hwMap.get(Servo.class, "servoTest0");
 
 //        digitalTouch = hwMap.get(DigitalChannel.class, "digitalTouch");
-        sensorColor = hwMap.get(ColorSensor.class, "sensorColor");
-        sensorDistance = hwMap.get(DistanceSensor.class, "sensorColor");
-
         // Set all motors to zero power
         leftDrive.setPower(0);
         rightDrive.setPower(0);
@@ -125,5 +123,20 @@ public class FramedDOBot
 //        leftClaw.setPosition(MID_SERVO);
 //        rightClaw.setPosition(MID_SERVO);
     }
- }
+    public void AllDrivesSetPower(double power) {
+        leftDrive.setPower(power);
+        rightDrive.setPower(power);
+        leftDriveBack.setPower(power);
+        rightDriveBack.setPower(power);
+    }
+    public void AllDrivesSetMode(DcMotor.RunMode mode){
+
+        leftDrive.setMode(mode);
+        rightDrive.setMode(mode);
+        rightDriveBack.setMode(mode);
+        rightDriveBack.setMode(mode);
+
+    }
+
+}
 
