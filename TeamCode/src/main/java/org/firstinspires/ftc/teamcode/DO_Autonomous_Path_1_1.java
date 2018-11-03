@@ -110,26 +110,28 @@ public class DO_Autonomous_Path_1_1 extends LinearOpMode {
         UnLatchRobot(DRIVE_SPEED, 5, 5, "Unlatching the robot");
 
         //run lateral
-        encoderDrive(DRIVE_SPEED,2,-2,-2,2, 5.0, "Move away (right) from notch");
-
+        encoderDrive(DRIVE_SPEED,2,-2,-2,2, 5.0, "Move away (right) from notch", true);
 
         //run forward
-       encoderDrive(DRIVE_SPEED,10,10,10,10, 5.0, "Move forward");
+        encoderDrive(DRIVE_SPEED,-10,-10,-10,-10, 5.0, "Move forward", false);
 
         //run lateral to left for 10inch to hit all the jewels
 //        //Gyanesh MoveLeftScanAndHitJewel();
 //
-//        //run lateral to right towards wall
-        encoderDrive(DRIVE_SPEED,20, -20, -20, 20, 5, "Lateral right");
-//
-//        //run lateral to left to have little clearance
-        encoderDrive(DRIVE_SPEED,5, -5, -5, 5, 5, "Left for clearance");
-//
-//        //run backwards to team's zone
-        encoderDrive(DRIVE_SPEED,-20, -20, -20,-20, 5, "Reaching zone");
+        //Turn to right
+        encoderDrive(DRIVE_SPEED,5, -5, 5, -5, 5, "Lateral right", false);
+
+        //run towards wall
+        encoderDrive(DRIVE_SPEED,-20, -20, -20, -20, 5, "Lateral right", false);
+
+//        //Turn right parallel to wall
+        encoderDrive(DRIVE_SPEED,5, -5, 5, -5, 5, "Left for clearance", false);
+
+        //run towards team's zone
+        encoderDrive(DRIVE_SPEED,-20, -20, -20,-20, 5, "Reaching zone", false);
 //
 //        //Finally, go and park in crater
-        encoderDrive(DRIVE_SPEED,30, 30, 30,30, 5, "Parking to carater");
+        encoderDrive(DRIVE_SPEED,30, 30, 30,30, 5, "Parking to carater", false);
     }
     /*
      *  Method to perfmorm a relative move, based on encoder counts.
@@ -140,7 +142,7 @@ public class DO_Autonomous_Path_1_1 extends LinearOpMode {
      *  3) Driver stops the opmode running.
      */
     private void encoderDrive(double speed, double leftInches, double rightInches,
-                             double leftBackInches, double rightBackInches, double timeOut, String operation) {
+                             double leftBackInches, double rightBackInches, double timeOut, String operation, Boolean goLateral) {
         int newLeftTarget, newLeftBackTarget;
         int newRightTarget, newRightBackTarget;
 
@@ -148,10 +150,10 @@ public class DO_Autonomous_Path_1_1 extends LinearOpMode {
         if (opModeIsActive()) {
 
             // Determine new target position, and pass to motor controller
-            newLeftTarget       = robot.leftDrive.getCurrentPosition()        + (int)(leftInches * COUNTS_PER_INCH);
-            newRightTarget      = robot.rightDrive.getCurrentPosition()       + (int)(rightInches * COUNTS_PER_INCH);
-            newLeftBackTarget   = robot.leftDriveBack.getCurrentPosition()    + (int)(leftBackInches * COUNTS_PER_INCH);
-            newRightBackTarget  = robot.rightDriveBack.getCurrentPosition()   + (int)(rightBackInches * COUNTS_PER_INCH);
+            newLeftTarget       = robot.leftDrive.getCurrentPosition() + (int)(leftInches * COUNTS_PER_INCH);
+            newRightTarget      = robot.rightDrive.getCurrentPosition() + (int)(rightInches * COUNTS_PER_INCH);
+            newLeftBackTarget   = robot.leftDriveBack.getCurrentPosition() + (int)(leftBackInches * COUNTS_PER_INCH);
+            newRightBackTarget  = robot.rightDriveBack.getCurrentPosition() + (int)(rightBackInches * COUNTS_PER_INCH);
 
             telemetry.addData(operation, "LTgt %d, RTgt %d, LBTgt %d, RBTgt %d", newLeftTarget, newRightTarget, newLeftBackTarget, newRightBackTarget);
             telemetry.update();
@@ -163,7 +165,7 @@ public class DO_Autonomous_Path_1_1 extends LinearOpMode {
 
             // Turn On RUN_TO_POSITION
             robot.AllDrivesSetMode(DcMotor.RunMode.RUN_TO_POSITION);
-            robot.AllDrivesSetPower(Math.abs(speed));
+            robot.AllDrivesSetPower(Math.abs(speed), goLateral);
 
             runtime.reset();
             // keep looping while we are still active, and there is time left, and both motors are running.
@@ -173,18 +175,19 @@ public class DO_Autonomous_Path_1_1 extends LinearOpMode {
             // However, if you require that BOTH motors have finished their moves before the robot continues
             // onto the next step, use (isBusy() || isBusy()) in the loop test.
             while ( opModeIsActive() &&
-                   (robot.leftDrive.isBusy() && robot.rightDrive.isBusy() &&
-                    robot.leftDriveBack.isBusy() && robot.rightDriveBack.isBusy()) &&
+                   (robot.leftDrive.isBusy() && robot.rightDrive.isBusy() /*&&
+                    robot.leftDriveBack.isBusy() && robot.rightDriveBack.isBusy()*/) &&
                     (runtime.seconds() < timeOut)){
                 //sleep(100);
             }
-            // Stop all motion;
-            robot.AllDrivesSetPower(0);
-
-            // Turn off RUN_TO_POSITION
-            robot.AllDrivesSetMode(DcMotor.RunMode.RUN_USING_ENCODER);
             telemetry.addData(operation, "takes %.1f s", runtime.seconds());
             telemetry.update();
+        }
+        if(!opModeIsActive()){
+            // Stop all motion;
+            robot.AllDrivesSetPower(0, true);
+            // Turn off RUN_TO_POSITION
+            robot.AllDrivesSetMode(DcMotor.RunMode.RUN_USING_ENCODER);
         }
     }
 }

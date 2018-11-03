@@ -55,7 +55,7 @@ public class DO_TeleOpMode_GamePad_1 extends LinearOpMode {
                 TurnRobot();
             }
             else {
-                robot.AllDrivesSetPower(0);
+                robot.AllDrivesSetPower(0, true);
                 //robot.latchMotor.setPower(0);
             }
         }
