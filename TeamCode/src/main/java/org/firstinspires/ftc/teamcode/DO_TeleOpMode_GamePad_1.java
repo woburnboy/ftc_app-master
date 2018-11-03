@@ -29,11 +29,8 @@
 
 package org.firstinspires.ftc.teamcode;
 
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
 @TeleOp(name="Digital Owls TeleOp Mode", group="DigiOwls")
@@ -48,37 +45,52 @@ public class DO_TeleOpMode_GamePad_1 extends LinearOpMode {
         // run until the end of the match (driver presses STOP)
         while (opModeIsActive()) {
             // Run the robot in the telemode (FWD, BWD and turn)
-            MoveAndTurnRobot();
+            if(gamepad1.left_stick_y != 0) {
+                MoveRobot();
+            }
+            else if( (gamepad1.left_trigger != 0) || (gamepad1.right_trigger != 0)) {
+                MovePully(); //latching and unlatching
+            }
+            else if((gamepad1.right_stick_x != 0) || (gamepad1.right_stick_y != 0)){
+                TurnRobot();
+            }
+            else {
+                robot.AllDrivesSetPower(0);
+                //robot.latchMotor.setPower(0);
+            }
         }
     }
 
-    private void MoveAndTurnRobot() {
+    private void MovePully(){
+        //Latch motor is for reverse direction
+        double latchDist = Range.clip(gamepad1.left_trigger + gamepad1.right_trigger, -1.0, 1.0);
+        robot.leftDrive.setPower(-latchDist);
+    }
+
+    private void MoveRobot() {
         // Send calculated power to wheels
-        if(gamepad1.left_trigger == 0){
-            robot.leftDrive.setPower(gamepad1.right_trigger);
-            robot.rightDrive.setPower(gamepad1.right_trigger);
-            robot.leftDriveBack.setPower(gamepad1.right_trigger);
-            robot.rightDriveBack.setPower(gamepad1.right_trigger);
-        }
-        else if(gamepad1.right_trigger == 0){
-            robot.leftDrive.setPower(-gamepad1.left_trigger);
-            robot.rightDrive.setPower(-gamepad1.left_trigger);
-            robot.leftDriveBack.setPower(-gamepad1.left_trigger);
-            robot.rightDriveBack.setPower(-gamepad1.left_trigger);
-        }
-        else if((gamepad1.left_stick_x != 0) && (gamepad1.left_stick_y != 0)){
-            double lateral = gamepad1.left_stick_x + gamepad1.left_stick_y;
-            robot.leftDrive.setPower(Range.clip(lateral, -1.0, 1.0));
-            robot.leftDriveBack.setPower(Range.clip(-lateral, -1.0, 1.0));
-            robot.rightDrive.setPower(Range.clip(-lateral, -1.0, 1.0));
-            robot.rightDriveBack.setPower(Range.clip(lateral, -1.0, 1.0));
+        double dist  =  Range.clip(gamepad1.left_stick_y, -1.0, 1.0) ;
+        robot.leftDrive.setPower(-dist);
+        robot.rightDrive.setPower(-dist);
+        robot.leftDriveBack.setPower(-dist);
+        robot.rightDriveBack.setPower(-dist);
+    }
+
+    private void TurnRobot() {
+        double turn  =  Range.clip(gamepad1.right_stick_y, -1.0, 1.0) ;
+        double lateral = Range.clip(gamepad1.right_stick_x, -1.0, 1.0) ;
+        double dist = turn + lateral;
+        if(gamepad1.right_stick_x != 0){
+            robot.leftDrive.setPower(-dist);
+            robot.leftDriveBack.setPower(dist);
+            robot.rightDrive.setPower(dist);
+            robot.rightDriveBack.setPower(-dist);
         }
         else {
-            double turn  =  gamepad1.right_stick_x + gamepad1.right_stick_y;
-            robot.leftDrive.setPower(Range.clip(turn, -1.0, 1.0));
-            robot.leftDriveBack.setPower(Range.clip(turn, -1.0, 1.0));
-            robot.rightDrive.setPower(Range.clip(-turn, -1.0, 1.0));
-            robot.rightDriveBack.setPower(Range.clip(-turn, -1.0, 1.0));
+            robot.leftDrive.setPower(dist);
+            robot.leftDriveBack.setPower(dist);
+            robot.rightDrive.setPower(-dist);
+            robot.rightDriveBack.setPower(-dist);
         }
     }
 }
