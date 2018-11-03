@@ -36,9 +36,6 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-import org.corningrobotics.enderbots.endercv.CameraViewDisplay;
-import org.opencv.core.MatOfPoint;
-
 import java.util.Collections;
 import java.util.List;
 
@@ -48,14 +45,19 @@ public class DO_Autonomous_Path_1_1 extends LinearOpMode {
     /* Declare OpMode members. */
     FramedDOBot             robot                   = new FramedDOBot();   // Use a Pushbot's hardware
     private ElapsedTime     runtime                 = new ElapsedTime();
-    private ScanColoredObjects coloredObjects       = null;
-    private static final double     COUNTS_PER_MOTOR_REV    = 1040 ;    // eg: AndyMark NeverRest40
-    private static final double     DRIVE_GEAR_REDUCTION    = 2.0 ;     // This is < 1.0 if geared UP
+    private static final double     COUNTS_PER_MOTOR_REV    = 1120;//1040 ;    // eg: AndyMark NeverRest40
+    private static final double     DRIVE_GEAR_REDUCTION    = 1.0 ;     // This is < 1.0 if geared UP
     private static final double     WHEEL_DIAMETER_INCHES   = 4.0 ;     // For figuring circumference
     private static final double     COUNTS_PER_INCH         = (COUNTS_PER_MOTOR_REV * DRIVE_GEAR_REDUCTION) /
                                                       (WHEEL_DIAMETER_INCHES * 3.1415);
-    private static final double     DRIVE_SPEED             = 0.9;
+    private static final double     DRIVE_SPEED             = 0.6;
+    private static final double     TURN_SPEED              = 0.5;
 
+    private static final double     COUNTS_PER_MOTOR_REV_Latch    = 2240;
+    private static final double     DRIVE_GEAR_REDUCTION_Latch    = 1.0 ;     // This is < 1.0 if geared UP
+    private static final double     WHEEL_DIAMETER_INCHES_Latch   = 1.45 ;     // For figuring circumference
+    private static final double     COUNTS_PER_INCH_Latch         = (COUNTS_PER_MOTOR_REV_Latch * DRIVE_GEAR_REDUCTION_Latch) /
+            (WHEEL_DIAMETER_INCHES_Latch * 3.1415);
     @Override
     public void runOpMode() {
         /*
@@ -73,59 +75,61 @@ public class DO_Autonomous_Path_1_1 extends LinearOpMode {
         RunInToPath1();
     }
 
+    private void UnLatchRobot(double speed, double inches, double timeOut, String operation){
+        // Ensure that the opmode is still active
+//        int newUnlatchTarget = 0;
+//        if (opModeIsActive()) {
+//            // Determine new target position, and pass to motor controller
+//            newUnlatchTarget = robot.latchMotor.getCurrentPosition() + (int)(inches * COUNTS_PER_INCH_Latch);
+//            robot.latchMotor.setTargetPosition(newUnlatchTarget);
+//
+//            // Turn On RUN_TO_POSITION
+//            robot.latchMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+//            robot.latchMotor.setPower(Math.abs(speed));
+//            runtime.reset();
+//            while (opModeIsActive() &&
+//                   (robot.latchMotor.isBusy() ) &&
+//                   (runtime.seconds() < timeOut)){
+//
+//            }
+//            // Stop all motion;
+//            robot.latchMotor.setPower(0);
+//
+//            // Turn off RUN_TO_POSITION
+//            robot.latchMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+//
+//            telemetry.addData(operation, "takes %.1f s", runtime.seconds());
+//            telemetry.update();
+//        }
+    }
+
     private void RunInToPath1() {
         telemetry.setAutoClear(false);
+
+        //Unlatch robot
+        UnLatchRobot(DRIVE_SPEED, 5, 5, "Unlatching the robot");
+
+        //run lateral
+        encoderDrive(DRIVE_SPEED,2,-2,-2,2, 5.0, "Move away (right) from notch");
+
+
         //run forward
-        encoderDrive(DRIVE_SPEED,10,10,10,10, 5, "Move forward");
+       encoderDrive(DRIVE_SPEED,10,10,10,10, 5.0, "Move forward");
 
         //run lateral to left for 10inch to hit all the jewels
-        MoveLeftScanAndHitJewel();
-
-        //run lateral to right towards wall
+//        //Gyanesh MoveLeftScanAndHitJewel();
+//
+//        //run lateral to right towards wall
         encoderDrive(DRIVE_SPEED,20, -20, -20, 20, 5, "Lateral right");
-
-        //run lateral to left to have little clearance
+//
+//        //run lateral to left to have little clearance
         encoderDrive(DRIVE_SPEED,5, -5, -5, 5, 5, "Left for clearance");
-
-        //run backwards to team's zone
+//
+//        //run backwards to team's zone
         encoderDrive(DRIVE_SPEED,-20, -20, -20,-20, 5, "Reaching zone");
-
-        //Finally, go and park in crater
+//
+//        //Finally, go and park in crater
         encoderDrive(DRIVE_SPEED,30, 30, 30,30, 5, "Parking to carater");
-    }
-
-    private void MoveLeftScanAndHitJewel() {
-        ConfigureCamera();
-        coloredObjects.enable();
-        List<MatOfPoint> contours = coloredObjects.getContours();
-        int counter = 0;
-        coloredObjects.setRequiredObject("yellow");
-        while(opModeIsActive())
-        {
-            contours = coloredObjects.getContours();
-            if(contours.isEmpty() && (counter < 5)) {
-
-                encoderDrive(DRIVE_SPEED, -2, 2, 2, -2, 2, "Scanning left " + Integer.toString(counter));
-                counter++;
-            }
-            else
-                break;
-        }
-
-        coloredObjects.disable();
-        if(!contours.isEmpty()) {
-            //run forward to hit the jewel
-            encoderDrive(DRIVE_SPEED, 3, 3, 3, 3, 5, "HITTING Object");
-
-            //run backward to clear position
-            encoderDrive(DRIVE_SPEED, -5, -5, -5, -5, 5, "Backing up");
-        }
-    }
-
-    private void ConfigureCamera() {
-        // Set the camera vision
-        coloredObjects = new ScanColoredObjects();
-        coloredObjects.init(hardwareMap.appContext, CameraViewDisplay.getInstance());
     }
     /*
      *  Method to perfmorm a relative move, based on encoder counts.
@@ -149,6 +153,9 @@ public class DO_Autonomous_Path_1_1 extends LinearOpMode {
             newLeftBackTarget   = robot.leftDriveBack.getCurrentPosition()    + (int)(leftBackInches * COUNTS_PER_INCH);
             newRightBackTarget  = robot.rightDriveBack.getCurrentPosition()   + (int)(rightBackInches * COUNTS_PER_INCH);
 
+            telemetry.addData(operation, "LTgt %d, RTgt %d, LBTgt %d, RBTgt %d", newLeftTarget, newRightTarget, newLeftBackTarget, newRightBackTarget);
+            telemetry.update();
+
             robot.leftDrive.setTargetPosition(newLeftTarget);
             robot.rightDrive.setTargetPosition(newRightTarget);
             robot.leftDriveBack.setTargetPosition(newLeftBackTarget);
@@ -169,7 +176,7 @@ public class DO_Autonomous_Path_1_1 extends LinearOpMode {
                    (robot.leftDrive.isBusy() && robot.rightDrive.isBusy() &&
                     robot.leftDriveBack.isBusy() && robot.rightDriveBack.isBusy()) &&
                     (runtime.seconds() < timeOut)){
-                sleep(100);
+                //sleep(100);
             }
             // Stop all motion;
             robot.AllDrivesSetPower(0);
